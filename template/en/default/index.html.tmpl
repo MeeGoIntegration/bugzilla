@@ -62,7 +62,8 @@
 [% END %]
 
 <div id="page-index">
-  <h1 id="welcome"> Welcome to [% terms.Bugzilla %]</h1>
+  <h1 id="welcome"> Welcome to the Mer [% terms.Bugzilla %]</h1>
+  <div class="intro">You can use your merproject.org account [% uid FILTER html %] on this page</div>
   <div class="intro">[% Hook.process('intro') %]</div>
 
   <div class="bz_common_actions">

@@ -1931,6 +1931,14 @@
     [% title = "Illegal User ID" %]
     User ID '[% userid FILTER html %]' is not valid integer.
 
+  [% ELSIF error == "uid_already_taken" %]
+    [% title = "username in use" %]
+    User ID '[% uid FILTER html %]' is already taken.
+
+  [% ELSIF error == "uid_must_be_azAZ09" %]
+    [% title = "Invalid username" %]
+    User ID '[% uid FILTER html %]' is not permitted. 2-12 characters using a-z A-Z 0-9 _  only
+
   [% ELSIF error == "extern_id_exists" %]
     [% title = "Account Already Exists" %]
     There is already an account

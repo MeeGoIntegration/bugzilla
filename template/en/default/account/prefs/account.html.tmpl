@@ -17,6 +17,11 @@
         || (user.authorizer.can_change_email && Param('allowemailchange')) %]
     <tr>
       <td colspan="3">
+        Your user account for merproject.org is : [% uid FILTER html %]
+      </td>
+    </tr>
+    <tr>
+      <td colspan="3">
         Please enter your existing password to confirm account changes.
       </td>
     </tr>

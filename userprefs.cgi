@@ -38,6 +38,8 @@ sub DoAccount {
     my $user = Bugzilla->user;
 
     $vars->{'realname'} = $user->name;
+    # Modified for Merproject to add extern_id/uid to the vars for reminding people of their login
+    $vars->{'uid'} = $user->extern_id;
 
     if (Bugzilla->params->{'allowemailchange'}
         && $user->authorizer->can_change_email)
