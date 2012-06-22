@@ -97,14 +97,17 @@ sub valid_login {
 # User Creation #
 #################
 
+# Modified for Mer to require uid and send uid to account confirmation
 sub offer_account_by_email {
     my $self = shift;
     my ($params) = @_;
     my $email = trim($params->{email})
         || ThrowCodeError('param_required', { param => 'email' });
+    my $uid = trim($params->{uid})
+        || ThrowCodeError('param_required', { param => 'uid' });
 
     Bugzilla->user->check_account_creation_enabled;
-    Bugzilla->user->check_and_send_account_creation_confirmation($email);
+    Bugzilla->user->check_and_send_account_creation_confirmation($email, $uid);
     return undef;
 }
 
