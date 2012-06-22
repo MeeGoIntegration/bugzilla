@@ -50,8 +50,11 @@ sub issue_api_token {
 
 # Creates and sends a token to create a new user account.
 # It assumes that the login has the correct format and is not already in use.
+# Extended by Mer to take an additional uid parameter and to support
+# tokendata being CSV "$login_name,$uid"
 sub issue_new_user_account_token {
     my $login_name = shift;
+    my $uid = shift;
     my $dbh = Bugzilla->dbh;
     my $template = Bugzilla->template;
     my $vars = {};
@@ -68,11 +71,12 @@ sub issue_new_user_account_token {
                 AND ' . $dbh->sql_istrcmp('eventdata', '?') . '
                 AND issuedate > '
                     . $dbh->sql_date_math('NOW()', '-', ACCOUNT_CHANGE_INTERVAL, 'MINUTE'),
-        undef, ('account', $login_name));
+        undef, ('account', "$login_name,$uid"));
 
     ThrowUserError('too_soon_for_new_token', {'type' => 'account'}) if $pending_requests;
 
-    my ($token, $token_ts) = _create_token(undef, 'account', $login_name);
+    # Include the uid in the account data
+    my ($token, $token_ts) = _create_token(undef, 'account', "$login_name,$uid");
 
     $vars->{'email'} = $login_name . Bugzilla->params->{'emailsuffix'};
     $vars->{'expiration_ts'} = ctime($token_ts + MAX_TOKEN_AGE * 86400);

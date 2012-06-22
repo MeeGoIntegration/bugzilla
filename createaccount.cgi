@@ -29,15 +29,20 @@ print $cgi->header();
 
 $user->check_account_creation_enabled;
 my $login = $cgi->param('login');
+# Added for Mer to pull uid from the params
+my $uid = $cgi->param('uid');
 
+# Modified for Mer to send uid to account creation and to put uid into
+# the $vars for the templates
 if (defined($login)) {
     # Check the hash token to make sure this user actually submitted
     # the create account form.
     my $token = $cgi->param('token');
     check_hash_token($token, ['create_account']);
 
-    $user->check_and_send_account_creation_confirmation($login);
+    $user->check_and_send_account_creation_confirmation($login, $uid);
     $vars->{'login'} = $login;
+    $vars->{'uid'} = $uid;
 
     $template->process("account/created.html.tmpl", $vars)
       || ThrowTemplateError($template->error());
