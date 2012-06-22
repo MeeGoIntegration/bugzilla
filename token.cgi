@@ -283,13 +283,18 @@ sub cancelChangeEmail {
       || ThrowTemplateError($template->error());
 }
 
+# Modified for Mer to support tokendata being CSV "$login_name,$uid"
+# and to put uid into the $vars for the templates
 sub request_create_account {
     my ($date, $login_name, $token) = @_;
 
     Bugzilla->user->check_account_creation_enabled;
+    my (undef, $date, $login_data) = Bugzilla::Token::GetTokenData($token);
+    my ($login_name, $uid) = split /,/, $login_data;
 
     $vars->{'token'} = $token;
     $vars->{'email'} = $login_name . Bugzilla->params->{'emailsuffix'};
+    $vars->{'uid'} = $uid;
     $vars->{'expiration_ts'} = ctime(str2time($date) + MAX_TOKEN_AGE * 86400);
 
     print $cgi->header();
@@ -297,10 +302,15 @@ sub request_create_account {
       || ThrowTemplateError($template->error());
 }
 
+# Modified for Mer to support tokendata being CSV "$login_name,$uid"
+# and to set the extern_id to the uid in the new User object
 sub confirm_create_account {
     my ($login_name, $token) = @_;
 
     Bugzilla->user->check_account_creation_enabled;
+
+    my (undef, undef, $login_data) = Bugzilla::Token::GetTokenData($token);
+    my ($login_name, $uid) = split /,/, $login_data;
 
     my $password = $cgi->param('passwd1') || '';
     validate_password($password, $cgi->param('passwd2') || '');
@@ -310,6 +320,7 @@ sub confirm_create_account {
     my $otheruser = Bugzilla::User->create({
         login_name => $login_name, 
         realname   => scalar $cgi->param('realname'),
+        extern_id  => $uid,
         cryptpassword => $password});
 
     # Now delete this token.
