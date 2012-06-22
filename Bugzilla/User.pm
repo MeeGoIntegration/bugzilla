@@ -2024,8 +2024,35 @@ sub check_account_creation_enabled {
       || ThrowUserError('account_creation_disabled');
 }
 
+# Added for Mer to validate the uid against a regexp; ensure it's not
+# in use; and to put uid into the $vars for the templates
+sub check_uid_valid {
+    # Mer specific - check uid. Taken from User.pm
+    my $self = shift;
+    my ($uid) = @_;
+    my $vars = { doc_section => 'myaccount.html' };
+
+    my $dbh = Bugzilla->dbh;
+    trick_taint($uid);
+    $vars->{'uid'} = $uid;
+
+    if ($uid !~ /^[a-zA-Z0-9_]{2,12}$/) {
+        # We just said that uid is not 'safe' so is it really OK to drop it in $vars?
+        ThrowUserError('uid_must_be_azAZ09', $vars);
+    }
+
+    my $user_id = $dbh->selectrow_array("SELECT userid FROM profiles WHERE " .
+                                        $dbh->sql_istrcmp('extern_id', '?'),
+                                        undef, $uid);
+    if ($user_id) {
+        ThrowUserError('uid_already_taken', $vars);
+    }
+}
+
+# Modified for Mer to take and validate uid when the account is
+# created and then to add that to the new token
 sub check_and_send_account_creation_confirmation {
-    my ($self, $login) = @_;
+    my ($self, $login, $uid) = @_;
 
     $login = $self->check_login_name($login);
     my $creation_regexp = Bugzilla->params->{'createemailregexp'};
@@ -2034,9 +2061,14 @@ sub check_and_send_account_creation_confirmation {
         ThrowUserError('account_creation_restricted');
     }
 
+    # Mer-specific check
+    $self->check_uid_valid($uid);
+    # It's been validated so it's OK
+    trick_taint($uid);
+
     # Create and send a token for this new account.
     require Bugzilla::Token;
-    Bugzilla::Token::issue_new_user_account_token($login);
+    Bugzilla::Token::issue_new_user_account_token($login, $uid);
 }
 
 # This is used in a few performance-critical areas where we don't want to
@@ -2636,11 +2668,13 @@ user with that username. Returns a C<Bugzilla::User> object.
 Checks that users can create new user accounts, and throws an error
 if user creation is disabled.
 
-=item C<check_and_send_account_creation_confirmation($login)>
+=item C<check_and_send_account_creation_confirmation($login, $uid)>
 
 If the user request for a new account passes validation checks, an email
 is sent to this user for confirmation. Otherwise an error is thrown
 indicating why the request has been rejected.
+
+Modified for Mer to require a uid to update LDAP
 
 =item C<is_available_username>
 
