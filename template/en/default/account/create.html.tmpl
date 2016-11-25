@@ -86,6 +86,14 @@
       Username:
   </span>
   <input size="35" id="uid" name="uid" required>
+
+  <br><img src="[% captcha_path(captcha_token) FILTER html %]"><br>
+  <span class="label">
+    Enter the above code:
+  </span>
+  <input id="captcha_code" name="captcha_code" required>
+  <input type="hidden" name="captcha_token" value="[% captcha_token FILTER html %]">
+
   <input type="hidden" id="token" name="token" value="[% issue_hash_token(['create_account']) FILTER html %]">
   <input type="submit" id="send" value="Send">
 </form>

@@ -166,6 +166,11 @@ sub REQUIRED_MODULES {
         # 2.0 is the first version that will work with JSON::RPC.
         version => '2.01',
     },
+    {
+        package => 'Authen-Captcha',
+        module  => 'Authen::Captcha',
+        version => '1.024',
+    },
     );
 
     if (ON_WINDOWS) {

@@ -389,6 +389,10 @@
     Bugzilla does not support the search type
     "[% operator.truncate(30, "...") FILTER html %]".
 
+  [% ELSIF error == "captcha_check_error" %]
+    [% title = "Captcha check failed" %]
+    Checking the captcha code failed.
+
   [% ELSE %]
     [%# Try to find hooked error messages %]
     [% error_message = Hook.process("errors") %]

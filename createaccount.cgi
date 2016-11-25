@@ -17,6 +17,8 @@ use Bugzilla::Constants;
 use Bugzilla::Error;
 use Bugzilla::Token;
 
+use Authen::Captcha;
+
 # Just in case someone already has an account, let them get the correct footer
 # on an error message. The user is logged out just after the account is
 # actually created.
@@ -33,12 +35,31 @@ my $login = $cgi->param('login');
 my $uid = $cgi->param('uid');
 
 # Modified for Mer to send uid to account creation and to put uid into
-# the $vars for the templates
+# the $vars for the templates. And added captcha for the robots
+
+my $captcha_data = bz_locations()->{'datadir'} . "/captcha";
+my $captcha_output = bz_locations()->{'assetsdir'};
+my $captcha = Authen::Captcha->new(
+    data_folder => $captcha_data,
+    output_folder => $captcha_output,
+);
+
 if (defined($login)) {
     # Check the hash token to make sure this user actually submitted
     # the create account form.
     my $token = $cgi->param('token');
     check_hash_token($token, ['create_account']);
+
+    my $captcha_token = $cgi->param('captcha_token');
+    my $captcha_code = $cgi->param('captcha_code');
+    my $result = $captcha->check_code($captcha_code, $captcha_token);
+    if ($result == 0) {
+        ThrowCodeError('captcha_check_error');
+    } elsif ($result == -1) {
+        ThrowUserError('captcha_expired');
+    } elsif ($result < -1 ) {
+        ThrowUserError('captcha_invalid');
+    }
 
     $user->check_and_send_account_creation_confirmation($login, $uid);
     $vars->{'login'} = $login;
@@ -48,6 +69,8 @@ if (defined($login)) {
       || ThrowTemplateError($template->error());
     exit;
 }
+
+$vars->{'captcha_token'} = $captcha->generate_code(10);
 
 # Show the standard "would you like to create an account?" form.
 $template->process("account/create.html.tmpl", $vars)
