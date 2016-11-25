@@ -1947,6 +1947,14 @@
     [% END %]
     with the External Login ID "[% extern_id FILTER html %]".
 
+  [% ELSIF error == "captcha_expired" %]
+    [% title = "Invalid captcha" %]
+    The used captcha has already expired.
+
+  [% ELSIF error == "captcha_invalid" %]
+    [% title = "Invalid captcha" %]
+    The given captcha code is not correct.
+
   [% ELSE %]
 
     [%# Try to find hooked error messages %]

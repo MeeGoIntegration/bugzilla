@@ -214,6 +214,8 @@ sub FILESYSTEM {
                                   dirs => DIR_CGI_WRITE },
          $assetsdir         => { files => WS_SERVE,
                                   dirs => DIR_CGI_OVERWRITE | DIR_ALSO_WS_SERVE },
+         "$datadir/captcha" => { files => CGI_WRITE,
+                                       dirs => DIR_CGI_WRITE },
 
          # Readable directories
          "$datadir/mining"     => { files => CGI_READ,
@@ -282,6 +284,7 @@ sub FILESYSTEM {
         $extensionsdir          => DIR_CGI_READ,
         # Directories that cgi scripts can write to.
         "$datadir/db"           => DIR_CGI_WRITE,
+        "$datadir/captcha"      => DIR_CGI_WRITE,
         $attachdir              => DIR_CGI_WRITE,
         $graphsdir              => DIR_CGI_WRITE | DIR_ALSO_WS_SERVE,
         $webdotdir              => DIR_CGI_WRITE | DIR_ALSO_WS_SERVE,
@@ -430,7 +433,7 @@ EOT
 
         "$assetsdir/.htaccess" => { perms => WS_SERVE, contents => <<EOT
 # Allow access to .css files
-<FilesMatch \\.(css|js)\$>
+<FilesMatch \\.(css|js|png)\$>
   <IfModule mod_version.c>
     <IfVersion < 2.4>
       Allow from all

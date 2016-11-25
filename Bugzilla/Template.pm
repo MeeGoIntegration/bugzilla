@@ -591,6 +591,18 @@ sub _concatenate_js {
     return [ $file ];
 }
 
+sub _captcha_path {
+    my $token = shift;
+    return "" unless $token;
+
+    my $cgi_path   = bz_locations()->{cgi_path};
+    my $assets_path = bz_locations()->{assetsdir};
+    my $captcha_path = "$assets_path" . "/$token.png";
+
+    $captcha_path =~ s/^\Q$cgi_path\E\///o;
+    return $captcha_path;
+}
+
 # YUI dependency resolution
 sub yui_resolve_deps {
     my ($yui, $yui_deps) = @_;
@@ -1112,6 +1124,7 @@ sub create {
             'css_files' => \&css_files,
             yui_resolve_deps => \&yui_resolve_deps,
             concatenate_js => \&_concatenate_js,
+            captcha_path => \&_captcha_path,
 
             # All classifications (sorted by sortkey, name)
             'all_classifications' => sub {
